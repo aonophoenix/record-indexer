@@ -7,8 +7,7 @@ package shared.communication;
  * 		<b>Domain:</b>
  * 			username : String
  * 			password : String
- * 			fields : List&lt;Integer&gt;
- * 			values : List&lt;String&gt;
+ * 			projectID : int
  * </pre>
  * @author Justin Shattuck
  */

@@ -45,12 +45,22 @@ public class DatabaseAccessor
 		UserAccessor ua = null;
 		ProjectAccessor pa = null;
 		ImageAccessor ia = null;
+		FieldAccessor fa = null;
+		RecordAccessor ra = null;
+		ValueAccessor va = null;
+		
 		boolean result = true;
 		int imageError = -1;
+		int fieldError = -1;
+		int recordError = -1;
+		int valueError = -1;
 		
 		ua = new UserAccessor();
 		pa = new ProjectAccessor();
 		ia = new ImageAccessor();
+		fa = new FieldAccessor();
+		ra = new RecordAccessor();
+		va = new ValueAccessor();
 		
 		for (int i = 0; i < userArray.length; i++)
 		{
@@ -64,18 +74,91 @@ public class DatabaseAccessor
 			if (!pa.addNewProject(projectArray[i]))
 				result = false;
 			
-			Image[] imageArray = projectArray[i].getImages().toArray(new Image[0]);
-			
-			for (int j = 0; j < imageArray.length; j++)
+			Field[] fieldArray = null;
+			if (projectArray[i].getFields() != null)
 			{
-				if (!ia.addNewImage(imageArray[j], projectArray[i].getProjectKey()) && result)
+				fieldArray = projectArray[i].getFields().toArray(new Field[0]);
+
+				for (int j = 0; j < fieldArray.length; j++)
 				{
-					result = false;
-					imageError = j;
+					if (!fa.addNewField(fieldArray[j], j,
+							projectArray[i].getProjectKey())
+							& result)
+					{
+						result = false;
+						fieldError = j;
+					}
 				}
 			}
 			
-			System.out.println("######\n" + projectArray[i].toString() + "######\n" + imageError + "######\n");
+			Image[] imageArray = null;
+			if (projectArray[i].getImages() != null)
+			{
+				imageArray = projectArray[i].getImages().toArray(new Image[0]);
+
+				for (int j = 0; j < imageArray.length; j++)
+				{
+					if (!ia.addNewImage(imageArray[j],
+							projectArray[i].getProjectKey())
+							& result)
+					{
+						result = false;
+						imageError = j;
+					}
+					Record[] recordArray = null;
+					if (imageArray[j].getRecords() != null)
+					{
+						recordArray = imageArray[j].getRecords().toArray(
+								new Record[0]);
+						
+						for (int k = 0; k < recordArray.length; k++)
+						{
+							System.out.println(ra.addNewRecord(recordArray[k],
+									imageArray[j].getImageID())
+									& result)
+								;
+//							{
+//								System.out.println("Index: " + k);
+//								System.out.println("Record: "
+//										+ recordArray[k]);
+//								System.out.println("ImageKey: " + imageArray[j].getImageID());
+//								
+//								result = false;
+//								recordError = j;
+//							}
+
+							String[] valueArray = null;
+							if (recordArray[k].getValues().getValues() != null)
+								valueArray = recordArray[k].getValues()
+										.getValues().toArray(new String[0]);
+							
+//							System.out.println("Length of valueArray: " + valueArray.length);
+							for (int l = 0; l < valueArray.length; l++)
+							{
+								
+								System.out.println(va.addNewValue(fieldArray[l].getTitle(),
+										valueArray[l],
+										recordArray[k].getRecordKey())
+										& result)
+									;
+//								{
+//								System.out.println("Index: " + l);
+//								System.out.println("Name: "
+//										+ fieldArray[l].getTitle());
+//								System.out.println("Value: " + valueArray[l]);
+//									
+//									result = false;
+//									valueError = j;
+//								}
+							}
+						}
+					}
+
+				}
+
+			}
+			
+	//		System.out.println("######\n" + projectArray[i].toString() + "######\n" + imageError + fieldError + recordError + valueError + "######\n");
 			
 		}
 		
@@ -135,15 +218,15 @@ public class DatabaseAccessor
 		String dropField = "DROP TABLE IF EXISTS Field;";
 		String createField = 
 				"CREATE TABLE Field (" + 
-						"FieldKey INTEGER PRIMARY KEY AUTOINCREMENT," +
-						"ProjectKey INTEGER," +
-						"Order INTEGER NON NULL," +
-						"Title TEXT NON NULL," +
-						"XCoord INTEGER NON NULL," +
-						"Width INTEGER NON NULL," +
-						"HelpHtml TEXT," +
-						"KnownData TEXT," +
-						"FOREIGN KEY (ProjectKey) REFERENCES Project(ProjectKey));";
+				"FieldKey INTEGER PRIMARY KEY AUTOINCREMENT," +
+				"ProjectKey INTEGER," +
+				"RowNumber INTEGER NON NULL," +
+				"Title TEXT NON NULL," +
+				"XCoord INTEGER NON NULL," +
+				"Width INTEGER NON NULL," +
+				"HelpHtml TEXT," +
+				"KnownData TEXT," +
+				"FOREIGN KEY (ProjectKey) REFERENCES Project(ProjectKey));";
 		
 		String dropImage = "DROP TABLE IF EXISTS Image;";
 		String createImage = 
@@ -161,36 +244,43 @@ public class DatabaseAccessor
 				"CREATE TABLE Record (" +
 				"RecordKey INTEGER PRIMARY KEY AUTOINCREMENT," +
 				"ImageKey INTEGER," +
-				"FirstName TEXT," +
-				"LastName TEXT," +
-				"Age INTEGER," +
-				"Ethnicity TEXT," +
-				"Gender TEXT," +
 				"FOREIGN KEY (ImageKey) REFERENCES Image(ImageKey));";
+		
+		String dropValue = "DROP TABLE IF EXISTS Value;";
+		String createValue = 
+				"CREATE TABLE Value (" +
+				"RecordKey INTEGER," +
+				"Name TEXT NOT NULL," +
+				"Value TEXT NOT NULL," +
+				"FOREIGN KEY (RecordKey) REFERENCES Record(RecordKey));";
 		
 		int errorLevel = -1;
 		try
 		{
 			errorLevel++;
-			stmt.executeUpdate(dropUser);
+			stmt.executeUpdate(dropUser);		//errorLevel == 0 if this fails
 			errorLevel++;
-			stmt.executeUpdate(createUser);
+			stmt.executeUpdate(createUser);		//errorLevel == 1 if this fails
 			errorLevel++;
-			stmt.executeUpdate(dropProject);
+			stmt.executeUpdate(dropProject);	//errorLevel == 2 if this fails
 			errorLevel++;
-			stmt.executeUpdate(createProject);
+			stmt.executeUpdate(createProject);	//errorLevel == 3 if this fails
 			errorLevel++;
-			stmt.executeUpdate(dropField);
+			stmt.executeUpdate(dropField);		//errorLevel == 4 if this fails
 			errorLevel++;
-			stmt.executeUpdate(createField);
+			stmt.executeUpdate(createField);	//errorLevel == 5 if this fails
 			errorLevel++;
-			stmt.executeUpdate(dropImage);
+			stmt.executeUpdate(dropImage);		//errorLevel == 6 if this fails
 			errorLevel++;
-			stmt.executeUpdate(createImage);
+			stmt.executeUpdate(createImage);	//errorLevel == 7 if this fails
 			errorLevel++;
-			stmt.executeUpdate(dropRecord);
+			stmt.executeUpdate(dropRecord);		//errorLevel == 8 if this fails
 			errorLevel++;
-			stmt.executeUpdate(createRecord);
+			stmt.executeUpdate(createRecord);	//errorLevel == 9 if this fails
+			errorLevel++;
+			stmt.executeUpdate(dropValue);		//errorLevel == 10 if this fails
+			errorLevel++;
+			stmt.executeUpdate(createValue);	//errorLevel == 11 if this fails
 		}
 		catch (SQLException e)
 		{

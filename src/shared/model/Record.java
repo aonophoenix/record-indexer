@@ -1,12 +1,14 @@
 package shared.model;
 
 import com.thoughtworks.xstream.annotations.XStreamAlias;
+import com.thoughtworks.xstream.annotations.XStreamOmitField;
 
 /**
  * A completely superfluous wrapper class that exists only to allow the generated xml 
  * to match the specs.
  * <pre>
  * 		<b>Domain:</b>
+ * 			recordKey : int;
  * 			values : Value;
  * </pre>
  * @author Justin Shattuck
@@ -15,6 +17,11 @@ import com.thoughtworks.xstream.annotations.XStreamAlias;
 @XStreamAlias("record")
 public class Record
 {
+	/**
+	 * Unique identifier associated with this field.
+	 */
+	@XStreamOmitField
+	private int recordKey;
 	/**
 	 * List of all values in this record.
 	 */
@@ -29,7 +36,7 @@ public class Record
 	
 	/**
 	 * Obvious.
-	 * @return the List of values
+	 * @return a Value
 	 */
 	public Value getValues()
 	{
@@ -55,6 +62,16 @@ public class Record
 //		return result.toString();
 		
 		return values.toString();
+	}
+
+	public int getRecordKey()
+	{
+		return recordKey;
+	}
+
+	public void setRecordKey(int recordKey)
+	{
+		this.recordKey = recordKey;
 	}
 	
 }

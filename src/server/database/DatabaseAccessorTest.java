@@ -41,7 +41,7 @@ public class DatabaseAccessorTest
 		xmlImporter = null;
 		try
 		{
-			xmlImporter = new XmlFileImporter("data/test.xml");
+			xmlImporter = new XmlFileImporter("data/records.xml");
 			xmlImporter.parseFile();
 			xmlImporter.convert();
 		}
@@ -50,53 +50,52 @@ public class DatabaseAccessorTest
 			fail("did not import xml file");
 		}
 		
-		
 			
-		Connection c = databaseAccessor.getDatabaseConnection().getCpds().getConnection();
-		Statement stmt = c.createStatement();
-		
-		String dropUser = "DROP TABLE IF EXISTS User;";
-		String createUser = 
-				"CREATE TABLE User (" +
-				"UserKey INTEGER PRIMARY KEY AUTOINCREMENT," +
-				"Username TEXT NON NULL UNIQUE," +
-				"Password TEXT NON NULL," +
-				"FirstName TEXT NON NULL," +
-				"LastName TEXT NON NULL," +
-				"Email TEXT," +
-				"IndexedRecords INTEGER DEFAULT 0," +
-				"CurrentBatch INTEGER DEFAULT -1);";
-		
-		String dropProject = "DROP TABLE IF EXISTS Project;";
-		String createProject = 
-				"CREATE TABLE Project (" +
-				"ProjectKey INTEGER PRIMARY KEY AUTOINCREMENT," +
-				"Title TEXT NON NULL," +
-				"RecordsPerImage INTEGER NON NULL," +
-				"FirstYCoord INTEGER NON NULL," +
-				"RecordHeight INTEGER NON NULL);";
-		
-		String dropImage = "DROP TABLE IF EXISTS Image;";
-		String createImage = 
-				"CREATE TABLE Image (" +
-				"ImageKey INTEGER PRIMARY KEY AUTOINCREMENT," +
-				"ProjectKey INTEGER," +
-				"FileString TEXT NON NULL," +
-				"IsComplete INTEGER," +
-				"AssignedUser TEXT," +
-				"FOREIGN KEY (ProjectKey) REFERENCES Project(ProjectKey)," +
-				"FOREIGN KEY (AssignedUser) REFERENCES User(Username)" +
-				");";
-		
-		stmt.executeUpdate(dropUser);
-		stmt.executeUpdate(createUser);
-		stmt.executeUpdate(dropProject);
-		stmt.executeUpdate(createProject);
-		stmt.executeUpdate(dropImage);
-		stmt.executeUpdate(createImage);
-		
-		stmt.close();
-		c.close();
+//		Connection c = databaseAccessor.getDatabaseConnection().getCpds().getConnection();
+//		Statement stmt = c.createStatement();
+//		
+//		String dropUser = "DROP TABLE IF EXISTS User;";
+//		String createUser = 
+//				"CREATE TABLE User (" +
+//				"UserKey INTEGER PRIMARY KEY AUTOINCREMENT," +
+//				"Username TEXT NON NULL UNIQUE," +
+//				"Password TEXT NON NULL," +
+//				"FirstName TEXT NON NULL," +
+//				"LastName TEXT NON NULL," +
+//				"Email TEXT," +
+//				"IndexedRecords INTEGER DEFAULT 0," +
+//				"CurrentBatch INTEGER DEFAULT -1);";
+//		
+//		String dropProject = "DROP TABLE IF EXISTS Project;";
+//		String createProject = 
+//				"CREATE TABLE Project (" +
+//				"ProjectKey INTEGER PRIMARY KEY AUTOINCREMENT," +
+//				"Title TEXT NON NULL," +
+//				"RecordsPerImage INTEGER NON NULL," +
+//				"FirstYCoord INTEGER NON NULL," +
+//				"RecordHeight INTEGER NON NULL);";
+//		
+//		String dropImage = "DROP TABLE IF EXISTS Image;";
+//		String createImage = 
+//				"CREATE TABLE Image (" +
+//				"ImageKey INTEGER PRIMARY KEY AUTOINCREMENT," +
+//				"ProjectKey INTEGER," +
+//				"FileString TEXT NON NULL," +
+//				"IsComplete INTEGER," +
+//				"AssignedUser TEXT," +
+//				"FOREIGN KEY (ProjectKey) REFERENCES Project(ProjectKey)," +
+//				"FOREIGN KEY (AssignedUser) REFERENCES User(Username)" +
+//				");";
+//		
+//		stmt.executeUpdate(dropUser);
+//		stmt.executeUpdate(createUser);
+//		stmt.executeUpdate(dropProject);
+//		stmt.executeUpdate(createProject);
+//		stmt.executeUpdate(dropImage);
+//		stmt.executeUpdate(createImage);
+//		
+//		stmt.close();
+//		c.close();
 		
 		System.out.println("// SET UP //");
 	}

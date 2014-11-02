@@ -15,27 +15,23 @@ import shared.model.*;
  * @author Justin
  *
  */
-public class ImageAccessor extends DatabaseAccessor
+public class FieldAccessor extends DatabaseAccessor
 {
 	private Connection conn;
 	private Statement stmt;
-	private final int COMPLETE = 1;
-	private final int INCOMPLETE = 0;
 	
-	
-	
-	public ImageAccessor(Connection c) throws SQLException
+	public FieldAccessor(Connection c) throws SQLException
 	{
 		this.conn = c;
 		stmt = conn.createStatement();
 	}
 	
-	public ImageAccessor()
+	public FieldAccessor()
 	{
 		
 	}
 	
-	public boolean addNewImage(Image i, int projectKey)
+	public boolean addNewField(Field f, int row, int projectKey)
 	{
 		try
 		{
@@ -63,19 +59,15 @@ public class ImageAccessor extends DatabaseAccessor
 		String sql = null;
 		
 		input.append(projectKey + ",");
-		input.append("\'" + i.getFileString() + "\',");
+		input.append(row + ",");
+		input.append("\'" + f.getTitle() + "\',");
+		input.append(f.getxCoord() + ",");
+		input.append(f.getWidth() + ",\'");
+		input.append(f.getHelpHtml() + "\',\'");
+		input.append(f.getKnownData() + "\'");
 		
-		if (i.getIsComplete())
-			input.append(COMPLETE);
-		else
-			input.append(INCOMPLETE);
-//		if (i.getAssignedUser().getUsername() == null)
-//			;
-//		else
-//			input.append(",\'" + i.getAssignedUser().getUsername() + "\'");
-		
-		sql = "INSERT INTO Image (ProjectKey, FileString, IsComplete) " +
-						"VALUES (" + input.toString() + ");";
+		sql = "INSERT INTO Field (ProjectKey, RowNumber, Title, XCoord, Width, HelpHtml, KnownData) " +
+				"VALUES (" + input.toString() + ");";
 		
 		Statement keyStmt = null;
 		ResultSet keyRS = null;
@@ -89,12 +81,12 @@ public class ImageAccessor extends DatabaseAccessor
 			keyRS = keyStmt.executeQuery("SELECT last_insert_rowid()");
 			keyRS.next();
 			int id = keyRS.getInt(1);
-			i.setImageID(id);
+			f.setFieldKey(id);
 		}
 		catch (SQLException e)
 		{
 			System.err.println(e.getSQLState());
-			System.err.println("Unable to insert Image: " + i.toString());
+			System.err.println("Unable to insert Field: " + f.toString());
 		}
 		
 		try
@@ -116,7 +108,6 @@ public class ImageAccessor extends DatabaseAccessor
 			System.err.println(e.getSQLState());
 			System.err.println("Unable to close connection: " + conn);
 		}
-		
 		
 		return result;
 	}

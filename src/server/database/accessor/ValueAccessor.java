@@ -15,27 +15,23 @@ import shared.model.*;
  * @author Justin
  *
  */
-public class ImageAccessor extends DatabaseAccessor
+public class ValueAccessor extends DatabaseAccessor
 {
 	private Connection conn;
 	private Statement stmt;
-	private final int COMPLETE = 1;
-	private final int INCOMPLETE = 0;
 	
-	
-	
-	public ImageAccessor(Connection c) throws SQLException
+	public ValueAccessor(Connection c) throws SQLException
 	{
 		this.conn = c;
 		stmt = conn.createStatement();
 	}
 	
-	public ImageAccessor()
+	public ValueAccessor()
 	{
 		
 	}
 	
-	public boolean addNewImage(Image i, int projectKey)
+	public boolean addNewValue(String n, String v, int recordKey)
 	{
 		try
 		{
@@ -62,39 +58,22 @@ public class ImageAccessor extends DatabaseAccessor
 		StringBuilder input = new StringBuilder();
 		String sql = null;
 		
-		input.append(projectKey + ",");
-		input.append("\'" + i.getFileString() + "\',");
+		input.append(recordKey + ",\'");
+		input.append(n + "\',\'");
+		input.append(v + "\'");
 		
-		if (i.getIsComplete())
-			input.append(COMPLETE);
-		else
-			input.append(INCOMPLETE);
-//		if (i.getAssignedUser().getUsername() == null)
-//			;
-//		else
-//			input.append(",\'" + i.getAssignedUser().getUsername() + "\'");
-		
-		sql = "INSERT INTO Image (ProjectKey, FileString, IsComplete) " +
-						"VALUES (" + input.toString() + ");";
-		
-		Statement keyStmt = null;
-		ResultSet keyRS = null;
+		sql = "INSERT INTO Value (RecordKey, Name, Value) " +
+				"VALUES (" + input.toString() + ");";
 		
 		try
 		{
 			stmt.execute(sql);
 			result = true;
-			
-			keyStmt = conn.createStatement();
-			keyRS = keyStmt.executeQuery("SELECT last_insert_rowid()");
-			keyRS.next();
-			int id = keyRS.getInt(1);
-			i.setImageID(id);
 		}
 		catch (SQLException e)
 		{
 			System.err.println(e.getSQLState());
-			System.err.println("Unable to insert Image: " + i.toString());
+			System.err.println("Unable to insert Name-Value Pair: " + n + "-" + v);
 		}
 		
 		try
@@ -116,7 +95,6 @@ public class ImageAccessor extends DatabaseAccessor
 			System.err.println(e.getSQLState());
 			System.err.println("Unable to close connection: " + conn);
 		}
-		
 		
 		return result;
 	}

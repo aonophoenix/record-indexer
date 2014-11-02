@@ -37,7 +37,7 @@ public class Value
 			values.add(s);
 		}
 		
-		public List<String> getValue()
+		public List<String> getValues()
 		{
 			return values;
 		} 

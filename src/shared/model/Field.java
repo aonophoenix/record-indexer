@@ -154,6 +154,11 @@ public class Field
 		
 		return result.toString();
 	}
+
+	public void setFieldKey(int fieldKey)
+	{
+		this.fieldKey = fieldKey;
+	}
 	
 	
 	
