@@ -36,7 +36,8 @@ public class Communicator
 	
 	
 	
-	public static Communicator getSingleton() {
+	public static Communicator getSingleton()
+	{
 		if(singleton == null) {
 			singleton = new Communicator();
 		}
@@ -61,7 +62,8 @@ public class Communicator
 			result.setResponseCode(connection.getResponseCode());
 			result.setResponseLength(connection.getContentLength());
 			if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
-				if(connection.getContentLength() == 0) {
+				if(connection.getContentLength() == 0)
+				{
 					result.setResponseBody(xmlStream.fromXML(connection.getInputStream()));
 				}
 			} else {
@@ -75,40 +77,44 @@ public class Communicator
 		return result;
 	}
 	
-	public HttpURLResponse doPost(String commandName, Object postData) throws ClientException {
+	public HttpURLResponse doPost(String commandName, Object postData) throws ClientException
+	{
 		assert commandName != null;
 		assert postData != null;
 		
-		System.out.println("creating a new HttpURLResponse");
+//		System.out.println("#creating a new HttpURLResponse");
 		HttpURLResponse result = new HttpURLResponse();
-		System.out.println("Command Name: " + commandName);
+//		System.out.println("##Command Name: " + commandName);
 		
 		try {
 			URL url = new URL(URL_PREFIX + commandName);
-			System.out.println(url);
+//			System.out.println("###" + url);
 			HttpURLConnection connection = (HttpURLConnection)url.openConnection();
-			System.out.println("connection made");
+//			System.out.println("####connection made");
 			connection.setRequestMethod(HTTP_POST);
 			connection.setDoOutput(true);
 			connection.connect();
 			
-			System.out.println(postData.toString());
-			boolean xmlnull = xmlStream == null;
-			System.out.println("#### XMLStream: " + xmlnull);
-			boolean connectionoutstreamnull = connection.getOutputStream() == null;
-			System.out.println("#### connection output stream:" + connectionoutstreamnull);
-			System.out.println("####");
-			System.out.println();
+//			System.out.println("#####" + postData.toString());
+//			boolean xmlnull = xmlStream == null;
+//			System.out.println("###### XMLStream: " + xmlnull);
+//			boolean connectionoutstreamnull = connection.getOutputStream() == null;
+//			System.out.println("#######connection output stream:" + connectionoutstreamnull);
+//			System.out.println("########");
+//			System.out.println();
 			
 			xmlStream.toXML(postData, connection.getOutputStream());
-			connection.getOutputStream().close();
+			connection.getOutputStream().close();						//this sends the data
+			
 			
 			result.setResponseCode(connection.getResponseCode());
 			result.setResponseLength(connection.getContentLength());
 			if (connection.getResponseCode() == HttpURLConnection.HTTP_OK)
 			{
-				if(connection.getContentLength() == 0) {
+				if(connection.getContentLength() == -1)
+				{
 					result.setResponseBody(xmlStream.fromXML(connection.getInputStream()));
+					
 				}
 			}
 			else
@@ -119,48 +125,74 @@ public class Communicator
 		}
 		catch (IOException e)
 		{
-			System.out.println("ioexception");
-			System.out.println();
+			System.out.println("communicator ioexception");
 			throw new ClientException(String.format("doPost failed: %s", e.getMessage()), e);
 		}
 		return result;
 	}
 	
-	public void validateUser(ValidateUser_Input vui) throws ClientException
+	public ValidateUser_Output validateUser(ValidateUser_Input vui) throws ClientException
 	{
-		doPost(ProxyServer.VALIDATE_USER, vui);
+		HttpURLResponse response = null;
 		
+		response = doPost(ProxyServer.VALIDATE_USER, vui);
 		
+		return (ValidateUser_Output) response.getResponseBody();
 		
 	}
 	
-	public void getProjects(String u, String pw)
+	public GetProjects_Output getProjects(GetProjects_Input gpi) throws ClientException
 	{
+		HttpURLResponse response = null;
+		
+		response = doPost(ProxyServer.GET_PROJECTS, gpi);
+		return (GetProjects_Output) response.getResponseBody();
 		
 	}
 	
-	public void getSampleImage(String u, String pw, int pid)
+	public GetSampleImage_Output getSampleImage(GetSampleImage_Input gsii) throws ClientException
 	{
+		HttpURLResponse response = null;
 		
+		response = doPost(ProxyServer.GET_SAMPLE_IMAGE, gsii);
+		return (GetSampleImage_Output) response.getResponseBody();
 	}
 	
-	public void downloadBatch(String u, String pw, int pid)
+	public DownloadBatch_Output downloadBatch(DownloadBatch_Input dbi) throws ClientException
 	{
+		HttpURLResponse response = null;
+		response = doPost(ProxyServer.DOWNLOAD_BATCH, dbi);
 		
+		return (DownloadBatch_Output) response.getResponseBody();
 	}
 	
-//	public void submitBatch(String u, String pw, int imgID, ArrayList<Record> r)
-//	{
-//		
-//	}
-	
-	public void getFields(String u, String pw, int pid)
+	public SubmitBatch_Output submitBatch(String u, String pw, int imgID, ArrayList<RecordValues> r) throws ClientException
 	{
+		HttpURLResponse response = null;
+		SubmitBatch_Input sbi = new SubmitBatch_Input(u, pw, imgID, r);
 		
+		response = doPost(ProxyServer.SUBMIT_BATCH, sbi);
+		
+		return (SubmitBatch_Output) response.getResponseBody();	}
+	
+	public GetFields_Output getFields(String u, String pw, int pid) throws ClientException
+	{
+		HttpURLResponse response = null;
+		GetFields_Input gfi = new GetFields_Input(u, pw, pid);
+		
+		response = doPost(ProxyServer.GET_FIELDS, gfi);
+		
+		return (GetFields_Output) response.getResponseBody();
 	}
 	
-	public void Search(String u, String pw, ArrayList<Integer> fields, ArrayList<String> values)
+	public Search_Output search(String u, String pw, ArrayList<Integer> fields, ArrayList<String> values) throws ClientException
 	{
+		HttpURLResponse response = null;
+		Search_Input si = new Search_Input(u, pw, fields, values);
+		
+		response = doPost(ProxyServer.SEARCH, si);
+		
+		return (Search_Output) response.getResponseBody();
 		
 	}
 	
@@ -168,6 +200,7 @@ public class Communicator
 	{
 		
 	}
+
 	
 	
 	

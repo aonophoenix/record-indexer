@@ -59,5 +59,14 @@ public class DownloadBatch_Input
 		return projectID;
 	}
 	
+	public String toString()
+	{
+		String result = "";
+		result = "Username: " + username + "//Password: " + password + "//Pid: " + projectID;
+		
+		return result;
+	}
+	
+	
 	
 }

@@ -34,7 +34,7 @@ public class HttpURLResponse
 	
 	public HttpURLResponse()
 	{
-		System.out.println("HttpURLResponse constructor");
+//		System.out.println("HttpURLResponse constructor");
 		this.responseCode = 0;
 		this.responseLength = 0;
 		this.responseBody = null;
@@ -90,6 +90,17 @@ public class HttpURLResponse
 	public void setResponseBody(Object responseBody)
 	{
 		this.responseBody = responseBody;
+	}
+	
+	public String toString()
+	{
+		StringBuilder sb = new StringBuilder();
+		
+		sb.append(responseCode + "//");
+		sb.append(responseLength + "//");
+		sb.append(responseBody.toString());
+		
+		return sb.toString();
 	}
 
 }

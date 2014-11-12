@@ -23,13 +23,13 @@ public class DataImporter
 	
 	public static void main(String args[])
 	{
-		xmlFileString = args[1];
+		xmlFileString = args[0];
 		
 		initialize();
 		
 	}
 	
-	public DataImporter()
+	public DataImporter() throws ServerException
 	{
 //		unzip = new Unzip("data/record-indexer-data.zip");
 //		if (unzip.getSourceFileString() == null)
@@ -39,6 +39,8 @@ public class DataImporter
 		try
 		{
 			importer = new XmlFileImporter(xmlFileString);
+			importer.parseFile();
+			importer.convert();
 		}
 		catch (FileNotFoundException e_xmlImporter)
 		{
@@ -48,15 +50,22 @@ public class DataImporter
 		if (importer != null)
 		{
 			indexerData = importer.getIndexerData();
-			databaseAccessor = new DatabaseAccessor();
-			databaseAccessor.storeXmlData(indexerData);
+			databaseAccessor = new DatabaseAccessor("importer.sqlite");
+			System.out.println(databaseAccessor.storeXmlData(indexerData));
 		}
 		
 	}
 	
 	public static void initialize()
 	{
-		DataImporter dataImporter = new DataImporter();
+		try
+		{
+			DataImporter dataImporter = new DataImporter();
+		}
+		catch (ServerException e)
+		{
+			System.err.println("Unable to access database");
+		}
 		
 		
 	}

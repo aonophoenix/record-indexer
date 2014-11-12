@@ -102,6 +102,7 @@ public class XmlFileImporter
 	 */
 	public IndexerData getIndexerData()
 	{
+		assert indexerData != null;
 		return indexerData;
 	}
 

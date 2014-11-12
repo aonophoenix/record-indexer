@@ -9,7 +9,6 @@ import java.rmi.ServerException;
 import server.database.DatabaseAccessor;
 import shared.communication.*;
 
-
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
@@ -41,7 +40,8 @@ public class Server
 		return;
 	}
 	
-	private void run()
+	@SuppressWarnings("restriction")
+	private void run() throws server.ServerException
 	{
 		try
 		{
@@ -54,9 +54,7 @@ public class Server
 			return;
 		}
 		
-		databaseAccessor = new DatabaseAccessor();
-		
-		
+		databaseAccessor = new DatabaseAccessor();		//opens default database
 		
 		server.setExecutor(null);
 
@@ -68,6 +66,7 @@ public class Server
 		server.createContext("/" + ProxyServer.SEARCH			, searchHandler);
 		server.createContext("/" + ProxyServer.SUBMIT_BATCH		, submitBatchHandler);
 		server.createContext("/" + ProxyServer.VALIDATE_USER	, validateUserHandler);
+		server.createContext("/" + "tomare"						, stop);
 		server.createContext("/"								, emptyHandler);
 		
 		System.out.println("starting server...");
@@ -86,6 +85,16 @@ public class Server
 			System.out.println("GOT HERE");
 		}
 	};
+	
+	private HttpHandler stop = new HttpHandler()
+	{
+		@Override
+		public void handle(HttpExchange exchange) throws IOException
+		{
+			System.out.println("Stopping server...");
+			server.stop(0);
+		}
+	};
 
 	private HttpHandler downloadBatchHandler = new HttpHandler()
 	{
@@ -93,13 +102,40 @@ public class Server
 		@Override
 		public void handle(HttpExchange exchange) throws IOException
 		{
+			DownloadBatch_Input dbi = (DownloadBatch_Input) xmlStream.fromXML(exchange.getRequestBody());
+			DownloadBatch_Output dbo = null;
+			try
+			{
+				dbo = databaseAccessor.downloadBatch((dbi));
+			}
+			catch (server.ServerException e)
+			{
+				exchange.sendResponseHeaders(HttpURLConnection.HTTP_INTERNAL_ERROR, -1);
+			}
 			System.out.println("downloadBatchHandler");
+//			System.out.println("DBI: " + dbi);
+//			System.out.println("DBO: " + dbo.isValid() + " " +
+//					dbo.isValidProject() + " " +
+//					dbo.isAvailableBatches() + " " +
+//					dbo.isBatchAlreadyAssigned() + " " + dbo.getResult());
 			
+			assert dbo != null;
+			
+			if (dbo.isValid())
+			{
+				exchange.sendResponseHeaders(HttpURLConnection.HTTP_OK, 0);
+				xmlStream.toXML(dbo, exchange.getResponseBody());
+				exchange.getResponseBody().close();
+			}
+			else
+				exchange.sendResponseHeaders(HttpURLConnection.HTTP_UNAUTHORIZED, -1);
+			
+			
+			exchange.close();
 		}
 	};
 	private HttpHandler downloadFileHandler = new HttpHandler()
 	{
-		
 		@Override
 		public void handle(HttpExchange exchange) throws IOException
 		{
@@ -116,8 +152,31 @@ public class Server
 		@Override
 		public void handle(HttpExchange exchange) throws IOException
 		{
+			GetFields_Input gfi = (GetFields_Input) xmlStream.fromXML(exchange.getRequestBody());
+			GetFields_Output gfo = null;
+			try
+			{
+				gfo = databaseAccessor.getFields((gfi));
+			}
+			catch (server.ServerException e)
+			{
+				exchange.sendResponseHeaders(HttpURLConnection.HTTP_INTERNAL_ERROR, -1);
+			}
 			System.out.println("getFieldsHandler");
+//			System.out.println("GFI: " + gfi);
+//			System.out.println("GFO: " + gfo);
 			
+			
+			if (gfo.isValidUser())
+			{
+				exchange.sendResponseHeaders(HttpURLConnection.HTTP_OK, 0);
+				xmlStream.toXML(gfo, exchange.getResponseBody());
+				exchange.getResponseBody().close();
+			}
+			else
+				exchange.sendResponseHeaders(HttpURLConnection.HTTP_UNAUTHORIZED, -1);
+			
+			exchange.close();
 		}
 		
 	};
@@ -127,19 +186,68 @@ public class Server
 		@Override
 		public void handle(HttpExchange exchange) throws IOException
 		{
+			GetProjects_Input gpi = (GetProjects_Input) xmlStream.fromXML(exchange.getRequestBody());
+			GetProjects_Output gpo = null;
+			try
+			{
+				gpo = databaseAccessor.getProjects((gpi));
+			}
+			catch (server.ServerException e)
+			{
+				exchange.sendResponseHeaders(HttpURLConnection.HTTP_INTERNAL_ERROR, -1);
+			}
 			System.out.println("getProjectsHandler");
+//			System.out.println("GPI: " + gpi);
+//			System.out.println("GPO: " + gpo);
 			
+			assert gpo != null;
+			
+			if (gpo.isValid())
+			{
+				exchange.sendResponseHeaders(HttpURLConnection.HTTP_OK, 0);
+				xmlStream.toXML(gpo, exchange.getResponseBody());
+				exchange.getResponseBody().close();
+			}
+			else
+				exchange.sendResponseHeaders(HttpURLConnection.HTTP_UNAUTHORIZED, -1);
+			
+			exchange.close();
 		}
 		
 	};
+	
 	private HttpHandler getSampleImageHandler = new HttpHandler()
 	{
 
 		@Override
 		public void handle(HttpExchange exchange) throws IOException
 		{
+			GetSampleImage_Input gsii = (GetSampleImage_Input) xmlStream.fromXML(exchange.getRequestBody());
+			GetSampleImage_Output gsio = null;
+			try
+			{
+				gsio = databaseAccessor.getSampleImage((gsii));
+			}
+			catch (server.ServerException e)
+			{
+				exchange.sendResponseHeaders(HttpURLConnection.HTTP_INTERNAL_ERROR, -1);
+			}
 			System.out.println("getSampleImageHandler");
+//			System.out.println("GSII: " + gsii);
+//			System.out.println("GSIO: " + gsio);
 			
+			assert gsio != null;
+			
+			if (gsio.isValidUser())
+			{
+				exchange.sendResponseHeaders(HttpURLConnection.HTTP_OK, 0);
+				xmlStream.toXML(gsio, exchange.getResponseBody());
+				exchange.getResponseBody().close();
+			}
+			else
+				exchange.sendResponseHeaders(HttpURLConnection.HTTP_UNAUTHORIZED, -1);
+			
+			exchange.close();
 		}
 		
 	};
@@ -149,8 +257,32 @@ public class Server
 		@Override
 		public void handle(HttpExchange exchange) throws IOException
 		{
-			System.out.println("searchHandler");
+			Search_Input si = (Search_Input) xmlStream.fromXML(exchange.getRequestBody());
+			Search_Output so = null;
 			
+			try
+			{
+				so = databaseAccessor.search(si);
+			}
+			catch (server.ServerException e)
+			{
+				exchange.sendResponseHeaders(HttpURLConnection.HTTP_INTERNAL_ERROR, -1);
+			}
+			System.out.println("searchHandler");
+//			System.out.println("SI: " + si);
+//			System.out.println("SO: " + so);
+			
+			
+			if (so.isValidUser())
+			{
+				exchange.sendResponseHeaders(HttpURLConnection.HTTP_OK, 0);
+				xmlStream.toXML(so, exchange.getResponseBody());
+				exchange.getResponseBody().close();
+			}
+			else
+				exchange.sendResponseHeaders(HttpURLConnection.HTTP_UNAUTHORIZED, -1);
+			
+			exchange.close();
 		}
 		
 	};
@@ -160,55 +292,63 @@ public class Server
 		@Override
 		public void handle(HttpExchange exchange) throws IOException
 		{
+			SubmitBatch_Input sbi = (SubmitBatch_Input) xmlStream.fromXML(exchange.getRequestBody());
+			SubmitBatch_Output sbo = null;
+			
+			try
+			{
+				sbo = databaseAccessor.submitBatch(sbi);
+			}
+			catch (server.ServerException e)
+			{
+				exchange.sendResponseHeaders(HttpURLConnection.HTTP_INTERNAL_ERROR, -1);
+			}
 			System.out.println("submitBatchHandler");
+			System.out.println("SI: " + sbi);
+			System.out.println("SO: " + sbo);
+			
+			
+			
 			
 		}
 		
 	};
 	private HttpHandler validateUserHandler = new HttpHandler()
 	{
-		
 		@Override
 		public void handle(HttpExchange exchange) throws IOException
 		{
 			ValidateUser_Input vui = (ValidateUser_Input) xmlStream.fromXML(exchange.getRequestBody());
-			
+			ValidateUser_Output vuo = null;
+			try
+			{
+				vuo = databaseAccessor.validateUser(vui);
+			}
+			catch (server.ServerException e)
+			{
+				exchange.sendResponseHeaders(HttpURLConnection.HTTP_INTERNAL_ERROR, -1);
+			}
 			System.out.println("validateUserHandler");
-			System.out.println(vui.toString());
+//			System.out.println("VUI: " + vui);
+//			System.out.println("VUO: " + vuo);
+			
+			assert vuo != null;
+			
+			if (vuo.isValid())
+			{
+				exchange.sendResponseHeaders(HttpURLConnection.HTTP_OK, 0);
+				xmlStream.toXML(vuo, exchange.getResponseBody());
+				
+				exchange.getResponseBody().close();
+			}
+			else
+				exchange.sendResponseHeaders(HttpURLConnection.HTTP_UNAUTHORIZED, -1);
 			
 			
-			
-			
-			exchange.sendResponseHeaders(HttpURLConnection.HTTP_OK, -1);
+			exchange.close();
 		}
 		
 	};
-	
-//	private HttpHandler getAllContactsHandler = new HttpHandler()
-//	{
-//		@Override
-//		public void handle(HttpExchange exchange) throws IOException
-//		{
-//			//should contact the server facade
-//			try
-//			{
-//				//get the stuff
-//			}
-//			catch(ServerException e)
-//			{
-//				exchange.sendResponseHeaders(HttpURLConnection.HTTP_INTERNAL_ERROR, -1);
-//			}
-//			
-//			exchange.sendResponseHeaders(HttpURLConnection.HTTP_OK, 0);
-//			//convert to XML
-//			exchange.getResponseBody().close();
-//			
-//		}
-//	};
-	
-	
-	
-	
 	
 	/**
 	 * @param args
@@ -218,7 +358,15 @@ public class Server
 		if (args.length == 1)
 			port = Integer.parseInt(args[0]);
 			
-		new Server().run();
+		try
+		{
+			new Server().run();
+		}
+		catch (server.ServerException e)
+		{
+			System.err.println("Error initializing server");
+			
+		}
 		
 		
 	}

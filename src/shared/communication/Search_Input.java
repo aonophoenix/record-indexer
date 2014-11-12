@@ -34,7 +34,20 @@ public class Search_Input
 		this.fields = new ArrayList<Integer>();
 		this.values = new ArrayList<String>();
 	}
-	
+	/**
+	 * Creates a new SeachInput.
+	 * @param u username
+	 * @param p password
+	 * @param f fields
+	 * @param v values
+	 */
+	public Search_Input(String u, String p, ArrayList<Integer> f, ArrayList<String> v)
+	{
+		this.username = u;
+		this.password = p;
+		this.fields = f;
+		this.values = v;
+	}
 	
 	/**
 	 * Attempts to add a fieldID
@@ -43,8 +56,9 @@ public class Search_Input
 	 */
 	public boolean addField(int f)
 	{
+		assert fields != null;
 		boolean success = false;
-		
+		success = fields.add(f);
 		return success;
 	}
 
@@ -55,8 +69,9 @@ public class Search_Input
 	 */
 	public boolean addValue(String v)
 	{
+		assert values != null;
 		boolean success = false;
-		
+		success = values.add(v);
 		return success;
 	}
 	
@@ -65,7 +80,8 @@ public class Search_Input
 	 * Obvious.
 	 * @return the username
 	 */
-	public String getUsername() {
+	public String getUsername()
+	{
 		return username;
 	}
 
@@ -81,22 +97,50 @@ public class Search_Input
 
 	/**
 	 * Obvious.
-	 * @return the fields
+	 * @return an array of Integer
 	 */
-	public ArrayList<Integer> getFields() {
-		return fields;
+	public Integer[] getFields()
+	{
+		assert fields != null;
+		return fields.toArray(new Integer[0]);
 	}
 
 
 	/**
 	 * Obvious.
-	 * @return the values
+	 * @return an array of String
 	 */
-	public ArrayList<String> getValues() {
-		return values;
+	public String[] getValues()
+	{
+		assert values != null;
+		return values.toArray(new String[0]);
 	}
 	
-	
+	public String toString()
+	{
+		String result = "";
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("Fields: ");
+		for (int i = 0; i < fields.size(); i++)
+		{
+			if (i != 0)
+				sb.append(",");
+			sb.append(fields.get(i));
+		}
+		sb.append("Values: ");
+		for (int i = 0; i < values.size(); i++)
+		{
+			if (i != 0)
+				sb.append(",");
+			sb.append(values.get(i));
+		}
+		
+		
+		result = "Username: " + username + "//Password: " + password + "//" + sb.toString();
+		
+		return result;
+	}
 	
 	
 }
